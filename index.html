@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProTrade AI - Pro Dashboard</title>
+    <style>
+        body { background-color: #0b0e11; color: #ffffff; font-family: -apple-system, sans-serif; margin: 0; padding: 0; }
+        .navbar { background-color: #0b0e11; border-bottom: 1px solid #2b3139; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: 1px; }
+        .logo span { color: #f0b90b; }
+        .container { padding: 40px; max-width: 1200px; margin: 0 auto; }
+        .page-title { font-size: 22px; font-weight: bold; margin-bottom: 20px; }
+        
+        table { width: 100%; border-collapse: collapse; background-color: #0b0e11; }
+        th { text-align: left; padding: 15px; color: #848e9c; font-size: 13px; text-transform: uppercase; border-bottom: 1px solid #2b3139; }
+        td { padding: 18px 15px; border-bottom: 1px solid #1e2329; font-size: 16px; font-weight: 600; color: #eaecef; }
+        tr:hover { background-color: #181a20; cursor: pointer; transition: 0.2s; }
+        
+        .symbol { color: #848e9c; font-size: 14px; margin-left: 8px; font-weight: 500; border: 1px solid #2b3139; padding: 2px 6px; border-radius: 4px;}
+        .price { color: #ffffff; font-size: 18px; }
+        .pred-price { color: #3468d1; font-size: 18px; }
+        
+        .bullish-badge { background: rgba(0, 255, 136, 0.1); color: #00ff88; padding: 6px 12px; border-radius: 6px; font-size: 14px; border: 1px solid rgba(0,255,136,0.3); }
+        .bearish-badge { background: rgba(255, 51, 51, 0.1); color: #ff3333; padding: 6px 12px; border-radius: 6px; font-size: 14px; border: 1px solid rgba(255,51,51,0.3); }
+        .loading-text { color: #848e9c; font-size: 14px; font-style: italic; }
+        
+        .refresh-btn { background-color: #f0b90b; color: #000; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; float: right; }
+        .refresh-btn:hover { background-color: #d1a00a; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="logo">QUANT<span>.AI</span></div>
+        <div style="color: #848e9c; font-size: 14px;">Terminal Active 🟢</div>
+    </div>
+
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div class="page-title">Forex & Crypto AI Predictions</div>
+            <button class="refresh-btn" onclick="startAIAnalysis()">🔄 Run Full Analysis</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Asset Name</th>
+                    <th>Live Price</th>
+                    <th>24h AI Prediction</th>
+                    <th>AI Market Trend</th>
+                </tr>
+            </thead>
+            <tbody id="crypto-table-body">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // यहाँ हमने Gold का सिंबल GC=F कर दिया है!
+        const assetList = [
+            { id: "GC=F", name: "Gold", symbol: "XAU/USD" },
+            { id: "EURUSD=X", name: "Euro", symbol: "EUR/USD" },
+            { id: "BTCUSDT", name: "Bitcoin", symbol: "BTC" },
+            { id: "ETHUSDT", name: "Ethereum", symbol: "ETH" },
+            { id: "SOLUSDT", name: "Solana", symbol: "SOL" }
+        ];
+
+        async function startAIAnalysis() {
+            const tbody = document.getElementById('crypto-table-body');
+            tbody.innerHTML = ''; 
+
+            assetList.forEach(asset => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${asset.name} <span class="symbol">${asset.symbol}</span></td>
+                    <td id="price-${asset.id}" class="loading-text">Fetching...</td>
+                    <td id="pred-${asset.id}" class="loading-text">Analyzing...</td>
+                    <td id="trend-${asset.id}" class="loading-text">🧠 AI working...</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            for (const asset of assetList) {
+                try {
+                    const response = await fetch('http://127.0.0.1:8000/api/predict/' + asset.id);
+                    const data = await response.json();
+
+                    document.getElementById(`price-${asset.id}`).className = 'price';
+                    document.getElementById(`price-${asset.id}`).innerText = '$' + data.current_price.toLocaleString();
+                    
+                    document.getElementById(`pred-${asset.id}`).className = 'pred-price';
+                    document.getElementById(`pred-${asset.id}`).innerText = '$' + data.predicted_price.toLocaleString();
+                    
+                    const trendTd = document.getElementById(`trend-${asset.id}`);
+                    if(data.trend.includes('BULLISH')) {
+                        trendTd.innerHTML = `<span class="bullish-badge">${data.trend}</span>`;
+                    } else {
+                        trendTd.innerHTML = `<span class="bearish-badge">${data.trend}</span>`;
+                    }
+                } catch (error) {
+                    document.getElementById(`trend-${asset.id}`).innerHTML = '<span style="color:red;">❌ Server Error</span>';
+                }
+            }
+        }
+
+        window.onload = startAIAnalysis;
+    </script>
+</body>
+</html>
