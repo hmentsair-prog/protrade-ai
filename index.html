@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProTrade AI - Pro Dashboard</title>
+    <title>ProTrade AI - Live Terminal</title>
     <style>
         body { background-color: #0b0e11; color: #ffffff; font-family: -apple-system, sans-serif; margin: 0; padding: 0; }
         .navbar { background-color: #0b0e11; border-bottom: 1px solid #2b3139; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; }
@@ -33,7 +33,7 @@
 
     <div class="navbar">
         <div class="logo">QUANT<span>.AI</span></div>
-        <div style="color: #848e9c; font-size: 14px;">Terminal Active 🟢</div>
+        <div style="color: #848e9c; font-size: 14px;">Cloud Engine Active 🟢</div>
     </div>
 
     <div class="container">
@@ -57,7 +57,6 @@
     </div>
 
     <script>
-        // यहाँ हमने Gold का सिंबल GC=F कर दिया है!
         const assetList = [
             { id: "GC=F", name: "Gold", symbol: "XAU/USD" },
             { id: "EURUSD=X", name: "Euro", symbol: "EUR/USD" },
@@ -76,14 +75,15 @@
                     <td>${asset.name} <span class="symbol">${asset.symbol}</span></td>
                     <td id="price-${asset.id}" class="loading-text">Fetching...</td>
                     <td id="pred-${asset.id}" class="loading-text">Analyzing...</td>
-                    <td id="trend-${asset.id}" class="loading-text">🧠 AI working...</td>
+                    <td id="trend-${asset.id}" class="loading-text">🧠 Cloud AI working...</td>
                 `;
                 tbody.appendChild(tr);
             });
 
             for (const asset of assetList) {
                 try {
-                    const response = await fetch('http://127.0.0.1:8000/api/predict/' + asset.id);
+                    // 🚀 यहाँ हमने आपका लाइव रेंडर लिंक डाल दिया है!
+                    const response = await fetch('https://protrade-ai-u3pf.onrender.com/api/predict/' + asset.id);
                     const data = await response.json();
 
                     document.getElementById(`price-${asset.id}`).className = 'price';
@@ -99,7 +99,7 @@
                         trendTd.innerHTML = `<span class="bearish-badge">${data.trend}</span>`;
                     }
                 } catch (error) {
-                    document.getElementById(`trend-${asset.id}`).innerHTML = '<span style="color:red;">❌ Server Error</span>';
+                    document.getElementById(`trend-${asset.id}`).innerHTML = '<span style="color:red;">❌ Cloud Error</span>';
                 }
             }
         }
